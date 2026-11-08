@@ -39,3 +39,5 @@ https://docs.api.nvidia.com/nim/reference/nvidia-nemotron-3_5-bolt-e4b-infer
 
 Next checkpoint: stable agent request/response contracts and snapshot adapter.
 The independent FastAPI endpoint and autonomous stress tests are not built yet.
+
+Full agent API and frontend setup: [INTEGRATION.md](INTEGRATION.md).
