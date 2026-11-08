@@ -16,7 +16,7 @@ export function resolveBaseUrl(base: string, isProd: boolean): string {
 export async function requestJson<T>(
   baseUrl: string,
   path: string,
-  schema: z.ZodType<T>,
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
   init: Omit<RequestInit, "signal"> & { signal?: AbortSignal | undefined } = {},
 ): Promise<T> {
   const { signal, ...rest } = init;

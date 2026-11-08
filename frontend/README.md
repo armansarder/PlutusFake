@@ -41,3 +41,55 @@ npm run dev
 - TypeScript
 - React
 - Tailwind CSS
+
+## Current Situation backend integration
+
+Only `/dashboard` switches data sources. Other pages retain Alex's independent
+synthetic demo. Never treat their plans or simulations as belonging to the backend
+customer. Backend mode shows unavailable savings and flexible spending until those
+records are integrated.
+
+From `frontend/`, set these in the PowerShell session that starts Vite:
+
+```powershell
+$env:VITE_SITUATION_DATA_MODE = 'remote'
+# Use the same privately configured token as the running backend:
+$env:FINPILOT_API_TOKEN = '<backend service token>'
+$env:FINPILOT_BACKEND_URL = 'http://127.0.0.1:8000' # optional; this is the default
+npm run dev -- --port 8080
+```
+
+Use `VITE_SITUATION_DATA_MODE=synthetic_demo` (the default) to retain the original
+Alex page. Invalid mode values fail explicitly. Restart Vite after changing its
+environment. For production, set the nonsecret mode at build time and supply the
+token and backend URL to the server runtime. Use the full TanStack server build;
+a static file host cannot serve this proxy. Never put the token in a `VITE_`
+variable, browser storage, URLs, or committed files.
+
+The browser requests only `GET /api/financial-data` on its own origin. The server
+adds the bearer token, uses a fixed upstream path, forbids query parameters and
+redirects, allows HTTP only on loopback, times out after 12 seconds, and returns
+safe errors with no-store caching. JSON is validated at both boundaries, historical
+records are omitted, and decimal strings convert exactly to safe integer cents.
+Only USD is supported by the current page; other currencies are rejected rather
+than mislabeled. Source notes, snapshot basis and individual estimated/confirmed
+statuses remain visible. `synthetic_demo` is identified as synthetic; other customer
+IDs are labeled configured backend data, without claiming they are live or complete.
+
+The local proxy exposes the backend's configured single customer to callers able
+to access the frontend server. Origin checks are not user authentication. Keep the
+demo local; a shared deployment must protect the application/proxy with its existing
+authenticated access boundary. This change does not add a login system.
+
+Verify at `http://localhost:8080/dashboard`: backend mode should show the current
+$800 snapshot for `synthetic_demo`, synthetic/estimated labels, upcoming events and
+unavailable budget/savings cards. In browser Network tools, the request should be
+same-origin with no service Authorization header. Stop the backend and reload:
+an explicit error and Try again button should appear, never Alex's balance.
+No backend token or source data is logged or persisted by this integration.
+
+```powershell
+npm test
+npx tsc --noEmit
+npm run build
+```

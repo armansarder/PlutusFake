@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import { SITUATION_DATA_MODE } from "@/services/situation";
+import { useRouterState, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Menu, X, ArrowUpRight } from "lucide-react";
@@ -9,6 +10,7 @@ const navCls =
   "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const backendSituation = useRouterState({ select: state => state.location.pathname === "/dashboard" }) && SITUATION_DATA_MODE === "remote";
   const [open, setOpen] = useState(false);
   const links = [{ to: "/", label: "Home" }, { to: "/dashboard", label: "Current situation" }, { to: "/monthly-plan", label: "Monthly plan" }, { to: "/simulator", label: "Simulator" }, { to: "/cash-flow", label: "Cash flow" }, { to: "/suggestions", label: "Suggestions" }] as const;
   return (
@@ -21,7 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav aria-label="Main" className="hidden items-center gap-0.5 xl:flex">
             {links.map((link) => <Link key={link.to} to={link.to} activeOptions={{ exact: true }} className={navCls} activeProps={{ className: "bg-primary-soft text-primary" }}>{link.label}</Link>)}
           </nav>
-          <div className="ml-auto"><FinancialDataBadge persona="Alex" /></div>
+          <div className="ml-auto">{backendSituation ? <span className="text-xs text-muted-foreground">Backend snapshot</span> : <FinancialDataBadge persona="Alex" />}</div>
           <Button variant="ghost" size="icon" className="xl:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</Button>
           {open && <nav aria-label="Mobile" className="grid w-full gap-1 border-t border-border pt-3 xl:hidden">{links.map((link) => <Link key={link.to} to={link.to} activeOptions={{ exact: true }} onClick={() => setOpen(false)} className={`${navCls} flex min-h-11 items-center justify-between`} activeProps={{ className: "bg-primary-soft text-primary" }}>{link.label}<ArrowUpRight className="h-4 w-4" /></Link>)}</nav>}
         </div>
