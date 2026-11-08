@@ -35,5 +35,6 @@ use the editor.
 - Return budget, savings, liquidity and explanation findings together from the simulation adapter; why: all comparison views must agree and missing monthly plans must remain unknown.
 - All money is integer cents and all dates are `YYYY-MM-DD` strings; why: avoids float drift and timezone shifts.
 - Never persist financial data in browser storage or URLs; why: Stage 1 security requirement (see SECURITY_HANDOFF.md).
-- Keep the six focused content pages on TanStack Router and the current-situation URL at /dashboard; why: simpler navigation preserves existing links and framework compatibility.
+- Keep the focused content pages on TanStack Router and the current-situation URL at /dashboard; why: simpler navigation preserves existing links and framework compatibility.
+- Agent, history, alerts and messaging data flow through typed adapters in `src/services` with all proposed backend paths centralized in `src/services/endpoints.ts`; why: teammate endpoints are proposed, not confirmed, and must swap in one place without silent fallback.
 - Share only the last submitted hypothetical request through an in-memory React context; recompute Cash Flow through SimulationAdapter against the approved plan; why: cross-page results remain current without financial storage or URL values.

@@ -10,15 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as CashFlowRouteImport } from './routes/cash-flow'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MonthlyPlanRouteImport } from './routes/monthly-plan'
 import { Route as SimulatorRouteImport } from './routes/simulator'
 import { Route as SuggestionsRouteImport } from './routes/suggestions'
+import { Route as TalkRouteImport } from './routes/talk'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertsRoute = AlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CashFlowRoute = CashFlowRouteImport.update({
@@ -46,66 +53,85 @@ const SuggestionsRoute = SuggestionsRouteImport.update({
   path: '/suggestions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TalkRoute = TalkRouteImport.update({
+  id: '/talk',
+  path: '/talk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/cash-flow': typeof CashFlowRoute
   '/dashboard': typeof DashboardRoute
   '/monthly-plan': typeof MonthlyPlanRoute
   '/simulator': typeof SimulatorRoute
   '/suggestions': typeof SuggestionsRoute
+  '/talk': typeof TalkRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/cash-flow': typeof CashFlowRoute
   '/dashboard': typeof DashboardRoute
   '/monthly-plan': typeof MonthlyPlanRoute
   '/simulator': typeof SimulatorRoute
   '/suggestions': typeof SuggestionsRoute
+  '/talk': typeof TalkRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alerts': typeof AlertsRoute
   '/cash-flow': typeof CashFlowRoute
   '/dashboard': typeof DashboardRoute
   '/monthly-plan': typeof MonthlyPlanRoute
   '/simulator': typeof SimulatorRoute
   '/suggestions': typeof SuggestionsRoute
+  '/talk': typeof TalkRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/alerts'
     | '/cash-flow'
     | '/dashboard'
     | '/monthly-plan'
     | '/simulator'
     | '/suggestions'
+    | '/talk'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/alerts'
     | '/cash-flow'
     | '/dashboard'
     | '/monthly-plan'
     | '/simulator'
     | '/suggestions'
+    | '/talk'
   id:
     | '__root__'
     | '/'
+    | '/alerts'
     | '/cash-flow'
     | '/dashboard'
     | '/monthly-plan'
     | '/simulator'
     | '/suggestions'
+    | '/talk'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlertsRoute: typeof AlertsRoute
   CashFlowRoute: typeof CashFlowRoute
   DashboardRoute: typeof DashboardRoute
   MonthlyPlanRoute: typeof MonthlyPlanRoute
   SimulatorRoute: typeof SimulatorRoute
   SuggestionsRoute: typeof SuggestionsRoute
+  TalkRoute: typeof TalkRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -115,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alerts': {
+      id: '/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cash-flow': {
@@ -152,16 +185,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuggestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/talk': {
+      id: '/talk'
+      path: '/talk'
+      fullPath: '/talk'
+      preLoaderRoute: typeof TalkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlertsRoute: AlertsRoute,
   CashFlowRoute: CashFlowRoute,
   DashboardRoute: DashboardRoute,
   MonthlyPlanRoute: MonthlyPlanRoute,
   SimulatorRoute: SimulatorRoute,
   SuggestionsRoute: SuggestionsRoute,
+  TalkRoute: TalkRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
