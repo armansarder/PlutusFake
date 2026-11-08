@@ -8,6 +8,8 @@ Source of truth (frontend/src/mocks/):
   demoBudgetPlan.ts         November spending so far by category
 
 Creates a NEW customer (Alex Morgan); the old Alex Rivera is left untouched.
+Monthly totals match the frontend exactly; individual purchases vary realistically
+(payday splurges, weekend groceries, a June Spotify price increase).
 Safe to re-run: anything already in Nessie is skipped, so a failed run can be resumed.
 
     python pipeline/seed_alex_v2.py --dry-run   # build + verify the plan, no API calls
@@ -17,9 +19,11 @@ import argparse
 import calendar
 import json
 import os
+import random
 import shutil
 import sys
 from collections import defaultdict
+from datetime import date
 
 YEAR = 2026
 IDS_FILE = "pipeline/data/seed_ids.json"
@@ -51,24 +55,33 @@ MERCHANTS = {
     "H-E-B": "groceries", "Trader Joe's": "groceries", "Walmart": "groceries",
     "Shell": "transport", "DART": "transport",
     "Chipotle": "fun", "Torchy's Tacos": "fun", "AMC Theatres": "fun", "Deep Ellum Bar": "fun",
+    "DoorDash": "fun",
     "Netflix": "subscriptions", "Spotify": "subscriptions", "iCloud": "subscriptions",
     "Planet Fitness": "subscriptions",
     "Amazon": "other", "Target": "other", "CVS Pharmacy": "other", "Great Clips": "other",
 }
 
-# How each monthly category total is split into purchases: (day, merchant, share, description)
-SPLITS = {
-    "groceries": [(3, "H-E-B", .30, "Groceries"), (10, "Trader Joe's", .20, "Groceries"),
-                  (18, "Walmart", .25, "Groceries"), (25, "H-E-B", .25, "Groceries")],
-    "transport": [(6, "Shell", .35, "Gas"), (16, "Shell", .35, "Gas"), (1, "DART", .30, "Transit pass")],
-    "fun": [(7, "Chipotle", .20, "Dinner"), (13, "AMC Theatres", .20, "Movies"),
-            (20, "Torchy's Tacos", .25, "Dinner with friends"), (27, "Deep Ellum Bar", .35, "Night out")],
-    "other": [(4, "Amazon", .35, "Household items"), (12, "Target", .30, "Household items"),
-              (21, "CVS Pharmacy", .15, "Pharmacy"), (24, "Great Clips", .20, "Haircut")],
+# Realism (Tier 1): monthly category TOTALS stay exactly as the frontend shows,
+# but individual purchases vary in count, day and amount, with real behavior patterns:
+#   - fun spending clusters in the 3 days after each payday (14th, 28th) and on weekends
+#   - groceries are weekend trips; gas every ~10 days; misc shopping is scattered
+#   - Spotify raises its price in June; Alex offsets it by switching to a cheaper gym plan
+SEED = 42  # fixed, so every run produces the identical plan
+PAYDAY_WINDOWS = {14, 15, 16, 28, 29, 30, 31, 1, 2}
+CATEGORY_RULES = {
+    #  category: (min purchases, max purchases, minimum $ per purchase, merchants with descriptions)
+    "groceries": (4, 6, 25, [("H-E-B", "Groceries"), ("Trader Joe's", "Groceries"), ("Walmart", "Groceries")]),
+    "transport": (3, 5, 15, [("Shell", "Gas"), ("Shell", "Gas"), ("DART", "Transit pass")]),
+    "fun": (4, 7, 12, [("Chipotle", "Dinner"), ("Torchy's Tacos", "Dinner with friends"),
+                       ("AMC Theatres", "Movies"), ("Deep Ellum Bar", "Night out"),
+                       ("DoorDash", "Late-night delivery")]),
+    "other": (3, 6, 10, [("Amazon", "Household items"), ("Target", "Household items"),
+                         ("CVS Pharmacy", "Pharmacy"), ("Great Clips", "Haircut")]),
 }
-# Fixed subscriptions: $70/month total, matching the frontend
-SUBSCRIPTIONS = [(2, "iCloud", 3, "iCloud storage"), (5, "Spotify", 17, "Spotify Premium"),
-                 (9, "Netflix", 15, "Netflix"), (15, "Planet Fitness", 35, "Gym membership")]
+SUBSCRIPTIONS_JAN_MAY = [(2, "iCloud", 3, "iCloud storage"), (5, "Spotify", 12, "Spotify Premium"),
+                         (9, "Netflix", 15, "Netflix"), (15, "Planet Fitness", 40, "Gym membership")]
+SUBSCRIPTIONS_JUN_ON = [(2, "iCloud", 3, "iCloud storage"), (5, "Spotify", 17, "Spotify Premium"),
+                        (9, "Netflix", 15, "Netflix"), (15, "Planet Fitness", 35, "Gym membership (basic plan)")]
 
 # November 1-7 so far, matching demoBudgetPlan.ts spentCents
 NOVEMBER = [
@@ -85,13 +98,35 @@ def d(month, day):
     return f"{YEAR}-{month:02d}-{min(day, calendar.monthrange(YEAR, month)[1]):02d}"
 
 
-def split(total, parts):
-    """Split whole dollars by shares; the last part absorbs rounding so the sum is exact."""
-    amounts = [round(total * share) for _, _, share, _ in parts[:-1]]
-    return amounts + [total - sum(amounts)]
+def random_split(rng, total, n, minimum):
+    """Split whole dollars into n uneven amounts (each >= minimum) that sum exactly to total."""
+    n = max(1, min(n, total // minimum))
+    weights = [rng.uniform(0.5, 1.5) for _ in range(n)]
+    spare = total - minimum * n
+    amounts = [minimum + int(spare * w / sum(weights)) for w in weights]
+    amounts[rng.randrange(n)] += total - sum(amounts)
+    return amounts
+
+
+def pick_days(rng, month, n, category):
+    """Choose purchase days with the behavior pattern for each category."""
+    last = calendar.monthrange(YEAR, month)[1]
+    days = list(range(1, last + 1))
+    weekday = {day: date(YEAR, month, day).weekday() for day in days}  # 4=Fri 5=Sat 6=Sun
+    if category == "fun":
+        weights = [(4 if day in PAYDAY_WINDOWS else 1) * (2 if weekday[day] >= 4 else 1) for day in days]
+    elif category == "groceries":
+        weights = [3 if weekday[day] >= 5 else 1 for day in days]
+    else:
+        weights = [1 for _ in days]
+    chosen = set()
+    while len(chosen) < n:
+        chosen.add(rng.choices(days, weights)[0])
+    return sorted(chosen)
 
 
 def build_plan():
+    rng = random.Random(SEED)
     plan = {"checking_deposits": [], "savings_deposits": [], "purchases": [],
             "bills": [], "transfers": []}
     for m, (income, saved, housing, groceries, transport, utilities, fun, subs, other) in HISTORY.items():
@@ -106,12 +141,17 @@ def build_plan():
                               "amount": utilities, "day": 17, "status": "completed"})
         for category, total in (("groceries", groceries), ("transport", transport),
                                 ("fun", fun), ("other", other)):
-            parts = SPLITS[category]
-            for (day, merchant, _, desc), amount in zip(parts, split(total, parts)):
+            low, high, minimum, merchants = CATEGORY_RULES[category]
+            n = rng.randint(low, high)
+            amounts = random_split(rng, total, n, minimum)
+            for i, (day, amount) in enumerate(zip(pick_days(rng, m, len(amounts), category), amounts)):
+                merchant, desc = merchants[i % len(merchants)] if category == "transport" \
+                    else rng.choice(merchants)
                 plan["purchases"].append({"date": d(m, day), "merchant": merchant,
                                           "amount": amount, "description": desc})
-        assert sum(a for _, _, a, _ in SUBSCRIPTIONS) == subs
-        for day, merchant, amount, desc in SUBSCRIPTIONS:
+        subscriptions = SUBSCRIPTIONS_JAN_MAY if m <= 5 else SUBSCRIPTIONS_JUN_ON
+        assert sum(a for _, _, a, _ in subscriptions) == subs
+        for day, merchant, amount, desc in subscriptions:
             plan["purchases"].append({"date": d(m, day), "merchant": merchant,
                                       "amount": amount, "description": desc})
         plan["transfers"].append({"date": d(m, 15), "amount": saved, "description": "Transfer to savings"})
@@ -124,6 +164,13 @@ def build_plan():
                           "amount": 1150, "day": 11, "status": "recurring"})
     plan["bills"].append({"date": "2026-11-17", "payee": "TXU Energy", "nickname": "Utilities",
                           "amount": 180, "day": 17, "status": "recurring"})
+    # Re-run safety relies on (date, amount, description) being unique per record type.
+    seen = set()
+    for p in plan["purchases"]:
+        key = (p["date"], p["amount"], p["description"])
+        if key in seen:
+            raise SystemExit(f"Duplicate purchase key {key}; change SEED")
+        seen.add(key)
     return plan
 
 

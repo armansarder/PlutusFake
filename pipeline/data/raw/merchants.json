@@ -64,6 +64,22 @@
     }
   },
   {
+    "_id": "4631be2e-926b-4f94-bf76-5b8c6b256d57",
+    "name": "DoorDash",
+    "category": "fun",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
     "_id": "479946e0-e43c-49c7-b04e-63f1a9ca1a2c",
     "name": "Great Clips",
     "category": "other",
