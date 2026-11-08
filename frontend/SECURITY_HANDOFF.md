@@ -1,0 +1,25 @@
+# Plutus Stage 1 — Security & Integration Handoff
+
+The frontend alone cannot secure a real financial app. This lists what Stage 1 does in the browser and what the backend **must** add.
+
+## At rest
+**Frontend (done):** synthetic fixture only; no financial data in localStorage/sessionStorage/IndexedDB/URLs; state lives in React memory and resets on reload; no persistent query cache; no secrets or API keys in source; no analytics scripts.
+**Backend (to do):** encrypt databases and backups, per-user authorization / row-level policies, secret management and rotation, retention and deletion policy.
+
+## In transit
+**Frontend (done):** same-origin relative API paths by default (`src/services/config.ts`); remote base URLs must be HTTPS in production (`resolveBaseUrl`); `fetch` with `cache: "no-store"`, abort signals and Zod-validated responses; nothing sensitive in query strings; no direct browser calls to Nessie, Nemotron or Photon.
+**Hosting/backend (to do):** TLS + HSTS, strict CORS allow-list, secure HttpOnly session cookies, CSRF protection, server-side rate limiting. Provider keys stay server-side.
+
+## In use
+**Frontend (done):** all text rendered through React escaping, no `dangerouslySetInnerHTML`/`eval`; UI validation of amounts, category IDs and dates; scenarios are immutable hypothetical overlays — no financial transactions, transfers or payments; budget revisions require explicit confirmation and remain in memory only; error messages never echo payloads; reduced-motion and keyboard support; no invented confidence scores.
+**Backend (to do):** re-validate every input, identify the user from the session (never from a client-supplied customer ID), authoritative simulation math.
+
+## Swapping in the real backend
+- Contracts + Zod schemas: `src/types/financial.ts`.
+- Demo adapters: `src/mocks/syntheticSimulationAdapter.ts` (fixture in `src/mocks/demoFinancialSnapshot.ts`).
+- HTTP adapters (ready, unused): `src/services/financial.ts` → `GET /api/v1/financial/snapshot`, `src/services/simulation.ts` → `POST /api/v1/simulations/compare`.
+- Flip `DATA_MODE` to `"remote"` in `src/services/config.ts`. There is no silent fallback to demo data on error.
+- Budget adapters: `src/services/budgets.ts` → `GET /api/v1/budgets?month=YYYY-MM`, `PUT /api/v1/budgets/current`. The remote service must require authentication for user-approved edits. Stage 1 never calls these endpoints.
+- Future Arman proposal boundary: `BudgetProposalAdapter.proposeBudget` and `budgetProposalSchema` → `POST /api/v1/budgets/propose`. Proposal allocations require user approval; no live agent/model call is implemented or triggered by the current UI.
+- Monthly budget fit, savings funding feasibility and cash liquidity are separate findings returned together. Spent is historical; committed categories are not duplicated as cash debits; allocations do not move cash. Undated earmarks and unavailable December bills are disclosed forecast limitations.
+- Calculation rules the backend should match: integer cents; horizon = start + 29 days inclusive; all same-day events summed before end-of-day balance (intraday overdrafts not detected); ties for lowest balance resolve to the earliest date.
