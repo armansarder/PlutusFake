@@ -19,7 +19,7 @@ import { yearHistoryQueryOptions } from "@/services/history";
 import { formatMoney, formatSignedMoney } from "@/lib/formatMoney";
 import { formatDateOnly } from "@/lib/dateOnly";
 import { DATA_MODE } from "@/services/config";
-import { BackendCustomerPage } from "@/components/app/BackendCustomerPage";
+import { BackendCashFlow } from "@/components/financial/BackendCashFlow";
 
 export const Route = createFileRoute("/cash-flow")({
   loader: async ({ context }) => {
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/cash-flow")({
 });
 
 function CashFlow() {
-  return DATA_MODE === "remote" ? <BackendCustomerPage page="cash-flow" /> : <DemoCashFlow />;
+  return DATA_MODE === "remote" ? <BackendCashFlow /> : <DemoCashFlow />;
 }
 function DemoCashFlow() {
   const { data: snap } = useSuspenseQuery(snapshotQueryOptions);

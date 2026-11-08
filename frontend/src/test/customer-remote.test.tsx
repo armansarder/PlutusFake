@@ -19,20 +19,21 @@ import { historyAdapter } from "@/services/history";
 import { agentAdapter, messagingAdapter } from "@/services/agent";
 import { SyntheticDataAdapter, SyntheticSimulationAdapter } from "@/mocks/syntheticSimulationAdapter";
 import { syntheticBudgetAdapter } from "@/mocks/syntheticBudgetAdapter";
+import { financialPayload, forecastPayload } from "./fixtures/engineResponses";
 
 const pages = [
   { path: "/dashboard", Component: DashboardRoute.options.component!, message: "Here's where you stand." },
   { path: "/monthly-plan", Component: MonthlyRoute.options.component!, message: "We don't have your monthly spending plan yet." },
-  { path: "/simulator", Component: SimulatorRoute.options.component!, message: "Purchase comparisons aren't available for this customer yet." },
-  { path: "/cash-flow", Component: CashFlowRoute.options.component!, message: "Your forecast isn't available yet." },
+  { path: "/simulator", Component: SimulatorRoute.options.component!, message: "What if you bought it?" },
+  { path: "/cash-flow", Component: CashFlowRoute.options.component!, message: "A look at what's next." },
   { path: "/alerts", Component: AlertsRoute.options.component!, message: "We don't have enough information to assess your plan yet." },
   { path: "/suggestions", Component: SuggestionsRoute.options.component!, message: "We don't have your monthly spending plan yet." },
   { path: "/talk", Component: TalkRoute.options.component!, message: "Personalized answers aren't available for this customer yet." },
 ] as const;
-const payload = { data: { customer_id: "synthetic_demo", currency: "USD", as_of_date: "2026-11-07", current_balance: "800.00", snapshot_basis: "opening", source_notes: ["Synthetic backend schedule"], upcoming_transactions: [{ id: "backend-bill", date: "2026-11-09", description: "Backend-only expense", amount: "-42.00", type: "expense", source_status: "estimated" }] } };
+const payload = financialPayload;
 let clients: QueryClient[] = [];
 function client() { const result = new QueryClient({ defaultOptions: { queries: { retry: false } } }); clients.push(result); return result; }
-beforeEach(() => { vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => Response.json(payload))); });
+beforeEach(() => { vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} }); vi.stubGlobal("fetch", vi.fn().mockImplementation(async (path: string) => Response.json(path === "/api/forecast" ? forecastPayload : payload))); });
 afterEach(() => { cleanup(); clients.forEach(c => c.clear()); clients = []; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 it.each(pages)("uses the backend customer and honest availability on $path", async ({ Component, message, path }) => {
@@ -42,11 +43,11 @@ it.each(pages)("uses the backend customer and honest availability on $path", asy
   expect(screen.getByText(/Synthetic demo dataset/)).toBeInTheDocument();
   expect(document.body.textContent).not.toMatch(/\$1,800|\$1,600|\$600|Reserved ticket|Emergency fund|Fun & Entertainment/);
   if (path === "/dashboard") expect(screen.getByText("$800")).toBeInTheDocument();
-  if (["/dashboard", "/cash-flow", "/alerts"].includes(path)) {
+  if (["/dashboard", "/alerts"].includes(path)) {
     expect(screen.getByText(/Backend-only expense/)).toHaveTextContent("Estimated");
-    expect(screen.getByText("−$42")).toBeInTheDocument();
+    expect(screen.getByText("−$900")).toBeInTheDocument();
   }
-  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledTimes(path === "/cash-flow" ? 2 : 1);
   expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe("/api/financial-data");
 });
 
@@ -79,7 +80,7 @@ it("keeps customer identity and one shared snapshot while navigating all financi
     expect(screen.getByText("Backend-connected data")).toBeInTheDocument();
     expect(screen.queryByText("Synthetic demo data · Alex")).not.toBeInTheDocument();
   }
-  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledTimes(2);
   expect(demoSnapshot).not.toHaveBeenCalled();
   expect(demoSimulation).not.toHaveBeenCalled();
   expect(demoPlan).not.toHaveBeenCalled();

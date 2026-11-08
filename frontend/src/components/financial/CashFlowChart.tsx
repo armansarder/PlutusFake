@@ -6,7 +6,7 @@ import { formatDateOnly } from "@/lib/dateOnly";
 import { formatMoney } from "@/lib/formatMoney";
 import type { AppliedEvent, ScenarioResult } from "@/types/financial";
 
-export type ChartSeries = { result: ScenarioResult; color: string; dash?: string; shortName: string };
+export type ChartSeries = { result: Pick<ScenarioResult, "id" | "dailyBalances" | "lowestBalanceDate" | "lowestBalanceCents">; color: string; dash?: string; shortName: string };
 
 export type ChartMarker = { date: string; tone: "income" | "payment" | "concern"; label: string; detail: string };
 
@@ -29,7 +29,8 @@ export function CashFlowChart({ series, events, bufferCents, selectedId, height 
     });
   }, [series]);
 
-  const all = series.flatMap((s) => s.result.dailyBalances.map((d) => d.endOfDayBalanceCents / 100));
+  // Event minimums can be below every daily close; keep those markers in view.
+  const all = series.flatMap((s) => [s.result.lowestBalanceCents / 100, ...s.result.dailyBalances.map((d) => d.endOfDayBalanceCents / 100)]);
   const min = Math.min(0, ...all);
   const max = Math.max(...all);
   const pad = (max - min) * 0.12;

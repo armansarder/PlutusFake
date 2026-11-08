@@ -19,7 +19,7 @@ import { budgetQueryOptions } from "@/services/budgets";
 import { simulationAdapter } from "@/services/simulation";
 import { HORIZON_DAYS, type FinancialSnapshot, type ScenarioComparison, type CompareScenariosRequest } from "@/types/financial";
 import { DATA_MODE } from "@/services/config";
-import { BackendCustomerPage } from "@/components/app/BackendCustomerPage";
+import { BackendSimulator } from "@/components/simulator/BackendSimulator";
 export const Route = createFileRoute("/simulator")({
   validateSearch: z.object({ preset: z.enum(["laptop"]).optional() }),
   loader: async ({ context }) => { if (DATA_MODE === "remote") return; const snap = await context.queryClient.ensureQueryData(snapshotQueryOptions); await context.queryClient.ensureQueryData(budgetQueryOptions(snap.startDate.slice(0, 7))); },
@@ -32,7 +32,7 @@ function defaults(snap: FinancialSnapshot, request: CompareScenariosRequest | nu
   return { label: now?.name ?? "Concert tickets", amount: String((now?.purchaseAmountCents ?? 12000) / 100), categoryId: now?.categoryId ?? "fun", purchaseDate: now?.purchaseDate ?? snap.startDate, altDate: later?.purchaseDate ?? (pay ? addDays(pay.date, 1) : addDays(snap.startDate, 7)), buffer: String((request?.bufferCents ?? 20000) / 100) };
 }
 function Simulator() {
-  return DATA_MODE === "remote" ? <BackendCustomerPage page="simulator" /> : <DemoSimulator />;
+  return DATA_MODE === "remote" ? <BackendSimulator /> : <DemoSimulator />;
 }
 function DemoSimulator() {
   const { data: snap } = useSuspenseQuery(snapshotQueryOptions);

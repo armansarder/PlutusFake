@@ -64,7 +64,7 @@ export function BackendSituation() {
       <MetricCard icon={CalendarClock} label="Next expected payday" value={payday ? formatMoney(payday.amountCents) : "Unavailable"} hint={payday ? `${formatDateOnly(payday.date)} · ${payday.provenance === "assumed" ? "estimated" : "confirmed"} income` : "No upcoming income supplied"} />
     </section>
     <BackendTransactions snapshot={snap} />
-    <p className="mt-6 text-sm text-muted-foreground">We don't have your monthly spending plan, savings allocations or historical transactions yet.</p>
+    <p className="mt-6 text-sm text-muted-foreground">We don't have your monthly spending plan or savings allocations yet. View available projections and historical records in Cash Flow.</p>
   </div>;
   }}</CustomerFinancialData>;
 }
