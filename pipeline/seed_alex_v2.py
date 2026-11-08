@@ -7,7 +7,7 @@ Source of truth (frontend/src/mocks/):
   demoYearHistory.ts        Jan-Oct income / spending / savings by category
   demoBudgetPlan.ts         November spending so far by category
 
-Creates a NEW customer (Alex Morgan); the old Alex Rivera is left untouched.
+Creates a NEW customer (Alex Carter); earlier demo customers are left untouched.
 Monthly totals match the frontend exactly; individual purchases vary realistically
 (payday splurges, weekend groceries, a June Spotify price increase).
 Safe to re-run: anything already in Nessie is skipped, so a failed run can be resumed.
@@ -27,7 +27,7 @@ from datetime import date
 
 YEAR = 2026
 IDS_FILE = "pipeline/data/seed_ids.json"
-CUSTOMER = {"first_name": "Alex", "last_name": "Morgan",
+CUSTOMER = {"first_name": "Alex", "last_name": "Carter",
             "address": {"street_number": "800", "street_name": "W Campbell Rd",
                         "city": "Richardson", "state": "TX", "zip": "75080"}}
 CHECKING = ("Checking", "Alex Checking", 1800)
@@ -314,10 +314,12 @@ def seed(plan):
             print(f"  purchases {i}/{len(plan['purchases'])}")
 
     # Keep the old Alex's IDs as a backup, then point the pipeline at Alex v2
+    backup = None
     if os.path.exists(IDS_FILE):
         old = json.load(open(IDS_FILE))
         if old.get("customer_id") != customer_id:
-            shutil.copy(IDS_FILE, "pipeline/data/seed_ids_alex_v1.json")
+            backup = f"pipeline/data/seed_ids_backup_{old.get('customer_id', 'unknown')[:8]}.json"
+            shutil.copy(IDS_FILE, backup)
     ids = {"customer_id": customer_id, "checking_id": checking, "savings_id": savings,
            "merchants": {name: merchant_ids[name] for name in MERCHANTS}}
     with open(IDS_FILE, "w") as f:
@@ -328,7 +330,7 @@ def seed(plan):
     print(f"\nAlex v2 customer ID: {customer_id}")
     print(f"Checking account ID: {checking}")
     print(f"Savings account ID:  {savings}")
-    print(f"Saved to {IDS_FILE} (old Alex backed up to pipeline/data/seed_ids_alex_v1.json)")
+    print(f"Saved to {IDS_FILE}" + (f" (previous IDs backed up to {backup})" if backup else ""))
 
 
 def main():

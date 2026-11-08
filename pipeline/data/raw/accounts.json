@@ -1,20 +1,20 @@
 [
   {
-    "_id": "b71b49c0-c55e-4a7a-b684-bb3d1faaf8fd",
+    "_id": "47fd17d1-b2b4-4774-818e-10d1cc5bed2e",
     "type": "Savings",
     "nickname": "Alex Savings",
     "rewards": 0,
     "balance": 800,
-    "account_number": "3633371120890887",
-    "customer_id": "2776330a-cbab-4186-a77a-dfcec095e353"
+    "account_number": "3635860225174265",
+    "customer_id": "8a5bc397-5a44-43a0-91f7-780873fc1212"
   },
   {
-    "_id": "da852aff-dc7b-4eb8-8235-90ad30985ae7",
+    "_id": "9727b62c-b9bd-4378-b02b-e25f37653076",
     "type": "Checking",
     "nickname": "Alex Checking",
     "rewards": 0,
     "balance": 1800,
-    "account_number": "1129499232922211",
-    "customer_id": "2776330a-cbab-4186-a77a-dfcec095e353"
+    "account_number": "1178910143453441",
+    "customer_id": "8a5bc397-5a44-43a0-91f7-780873fc1212"
   }
 ]

@@ -2,62 +2,84 @@
   {
     "kind": "paycheck",
     "name": "Payroll deposit",
-    "amount": 600.0,
-    "every_days": 14,
-    "every_months": null,
-    "last_date": "2026-10-31",
-    "occurrences": 5
+    "amount": 1600.0,
+    "schedule": "semi-monthly",
+    "days_of_month": [
+      14,
+      28
+    ],
+    "last_date": "2026-10-28",
+    "occurrences": 20,
+    "confidence": "high"
   },
   {
     "kind": "subscription",
     "name": "Netflix",
     "amount": -15.0,
     "every_months": 1,
+    "day_of_month": 9,
     "last_date": "2026-10-09",
-    "occurrences": 2
+    "occurrences": 10,
+    "price_changes": []
+  },
+  {
+    "kind": "subscription",
+    "name": "Planet Fitness",
+    "amount": -35.0,
+    "every_months": 1,
+    "day_of_month": 15,
+    "last_date": "2026-10-15",
+    "occurrences": 10,
+    "price_changes": [
+      {
+        "from": 40.0,
+        "to": 35.0,
+        "date": "2026-06-15"
+      }
+    ]
   },
   {
     "kind": "subscription",
     "name": "Spotify",
-    "amount": -11.0,
+    "amount": -17.0,
     "every_months": 1,
-    "last_date": "2026-10-22",
-    "occurrences": 2
+    "day_of_month": 5,
+    "last_date": "2026-11-05",
+    "occurrences": 11,
+    "price_changes": [
+      {
+        "from": 12.0,
+        "to": 17.0,
+        "date": "2026-06-05"
+      }
+    ]
   },
   {
-    "kind": "bill",
-    "name": "Phone bill",
-    "payee": "T-Mobile",
-    "amount": -45.0,
+    "kind": "subscription",
+    "name": "iCloud",
+    "amount": -3.0,
     "every_months": 1,
-    "next_date": "2026-11-12",
-    "recurring_day": 12
+    "day_of_month": 2,
+    "last_date": "2026-11-02",
+    "occurrences": 11,
+    "price_changes": []
   },
   {
     "kind": "bill",
     "name": "Rent",
-    "payee": "Campus Apartments",
-    "amount": -900.0,
-    "every_months": 1,
-    "next_date": "2026-12-01",
-    "recurring_day": 1
+    "payee": "Campus View Apartments",
+    "amount": -1150.0,
+    "category": "housing",
+    "next_date": "2026-11-11",
+    "day_of_month": 11
   },
   {
     "kind": "bill",
-    "name": "Car insurance",
-    "payee": "GEICO",
-    "amount": -180.0,
-    "every_months": 1,
-    "next_date": "2026-11-13",
-    "recurring_day": 13
-  },
-  {
-    "kind": "bill",
-    "name": "Electric bill",
+    "name": "Utilities",
     "payee": "TXU Energy",
-    "amount": -80.0,
-    "every_months": 1,
-    "next_date": "2026-11-10",
-    "recurring_day": 10
+    "amount": -180.0,
+    "category": "utilities",
+    "next_date": "2026-11-17",
+    "day_of_month": 17
   }
 ]

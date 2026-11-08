@@ -1,44 +1,176 @@
 {
-  "2026-09": {
-    "spending": 1476.0,
-    "income": 1200.0,
+  "2026-01": {
+    "spending": 2780.0,
+    "income": 3200.0,
+    "saved": 50.0,
     "by_category": {
-      "Housing": 900.0,
-      "Insurance": 180.0,
-      "Groceries": 135.0,
-      "Utilities": 123.0,
-      "Cash": 40.0,
-      "Food": 37.0,
-      "Transport": 35.0,
-      "Subscriptions": 26.0
+      "housing": 1150.0,
+      "other": 470.0,
+      "groceries": 410.0,
+      "fun": 260.0,
+      "transport": 230.0,
+      "utilities": 190.0,
+      "subscriptions": 70.0
     },
-    "transaction_count": 18
+    "everyday_spending": 1370.0,
+    "transaction_count": 33
+  },
+  "2026-02": {
+    "spending": 2640.0,
+    "income": 3200.0,
+    "saved": 75.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 420.0,
+      "groceries": 390.0,
+      "transport": 220.0,
+      "fun": 210.0,
+      "utilities": 180.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1240.0,
+    "transaction_count": 31
+  },
+  "2026-03": {
+    "spending": 2710.0,
+    "income": 3200.0,
+    "saved": 75.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 430.0,
+      "groceries": 400.0,
+      "fun": 240.0,
+      "transport": 240.0,
+      "utilities": 180.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1310.0,
+    "transaction_count": 30
+  },
+  "2026-04": {
+    "spending": 2590.0,
+    "income": 3200.0,
+    "saved": 100.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 410.0,
+      "groceries": 380.0,
+      "transport": 220.0,
+      "fun": 190.0,
+      "utilities": 170.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1200.0,
+    "transaction_count": 31
+  },
+  "2026-05": {
+    "spending": 2830.0,
+    "income": 3200.0,
+    "saved": 75.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 470.0,
+      "groceries": 430.0,
+      "fun": 280.0,
+      "transport": 250.0,
+      "utilities": 180.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1430.0,
+    "transaction_count": 27
+  },
+  "2026-06": {
+    "spending": 2720.0,
+    "income": 3350.0,
+    "saved": 100.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 450.0,
+      "groceries": 410.0,
+      "transport": 230.0,
+      "fun": 220.0,
+      "utilities": 190.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1310.0,
+    "transaction_count": 33
+  },
+  "2026-07": {
+    "spending": 2680.0,
+    "income": 3200.0,
+    "saved": 75.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 420.0,
+      "groceries": 400.0,
+      "transport": 240.0,
+      "fun": 200.0,
+      "utilities": 200.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1260.0,
+    "transaction_count": 28
+  },
+  "2026-08": {
+    "spending": 2910.0,
+    "income": 3200.0,
+    "saved": 100.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 480.0,
+      "groceries": 440.0,
+      "fun": 300.0,
+      "transport": 260.0,
+      "utilities": 210.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1480.0,
+    "transaction_count": 30
+  },
+  "2026-09": {
+    "spending": 2620.0,
+    "income": 3200.0,
+    "saved": 75.0,
+    "by_category": {
+      "housing": 1150.0,
+      "other": 400.0,
+      "groceries": 390.0,
+      "transport": 220.0,
+      "fun": 210.0,
+      "utilities": 180.0,
+      "subscriptions": 70.0
+    },
+    "everyday_spending": 1220.0,
+    "transaction_count": 31
   },
   "2026-10": {
-    "spending": 1710.0,
-    "income": 1800.0,
+    "spending": 2550.0,
+    "income": 3200.0,
+    "saved": 75.0,
     "by_category": {
-      "Housing": 900.0,
-      "Groceries": 245.0,
-      "Insurance": 180.0,
-      "Utilities": 137.0,
-      "Food": 79.0,
-      "Cash": 60.0,
-      "Shopping": 45.0,
-      "Transport": 38.0,
-      "Subscriptions": 26.0
+      "housing": 1150.0,
+      "other": 390.0,
+      "groceries": 380.0,
+      "transport": 210.0,
+      "fun": 180.0,
+      "utilities": 170.0,
+      "subscriptions": 70.0
     },
-    "transaction_count": 24
+    "everyday_spending": 1160.0,
+    "transaction_count": 30
   },
   "2026-11": {
-    "spending": 1015.0,
+    "spending": 490.0,
     "income": 0.0,
+    "saved": 0.0,
     "by_category": {
-      "Housing": 900.0,
-      "Groceries": 60.0,
-      "Transport": 36.0,
-      "Food": 19.0
+      "fun": 180.0,
+      "groceries": 180.0,
+      "transport": 70.0,
+      "other": 40.0,
+      "subscriptions": 20.0
     },
-    "transaction_count": 5
+    "everyday_spending": 470.0,
+    "transaction_count": 11
   }
 }

@@ -12,7 +12,6 @@ import json
 import re
 import threading
 import time
-from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from decimal import Decimal
@@ -27,18 +26,22 @@ TRANSACTION_KINDS = ('deposits', 'withdrawals', 'purchases', 'transfers', 'bills
 NESSIE_HOSTS = ('api.nessieisreal.com', 'prod-api.nessieisreal.com')
 CASH_ACCOUNT_TYPES = ('Checking', 'Savings')
 
+# Raw categories -> frontend category IDs (same mapping as pipeline/transform.py)
 CATEGORY_MAP = {
-    'food': 'Food', 'restaurant': 'Food', 'restaurants': 'Food', 'dining': 'Food',
-    'groceries': 'Groceries', 'grocery': 'Groceries',
-    'transport': 'Transport', 'gas': 'Transport', 'fuel': 'Transport',
-    'shopping': 'Shopping', 'retail': 'Shopping',
-    'subscriptions': 'Subscriptions', 'subscription': 'Subscriptions',
-    'entertainment': 'Subscriptions', 'streaming': 'Subscriptions',
+    'groceries': 'groceries', 'grocery': 'groceries', 'supermarket': 'groceries',
+    'food': 'fun', 'restaurant': 'fun', 'restaurants': 'fun', 'dining': 'fun',
+    'fun': 'fun', 'entertainment': 'fun', 'bar': 'fun', 'nightlife': 'fun',
+    'transport': 'transport', 'transportation': 'transport', 'gas': 'transport',
+    'fuel': 'transport', 'transit': 'transport',
+    'subscriptions': 'subscriptions', 'subscription': 'subscriptions', 'streaming': 'subscriptions',
+    'shopping': 'other', 'retail': 'other', 'other': 'other', 'health': 'other',
+    'pharmacy': 'other', 'personal': 'other',
+    'housing': 'housing', 'rent': 'housing', 'utilities': 'utilities',
 }
-BILL_KEYWORDS = (('rent', 'Housing'), ('mortgage', 'Housing'), ('electric', 'Utilities'),
-                 ('water', 'Utilities'), ('phone', 'Utilities'), ('internet', 'Utilities'),
-                 ('insurance', 'Insurance'))
-COUNTED_STATUSES = ('completed', 'executed')
+BILL_KEYWORDS = (('rent', 'housing'), ('mortgage', 'housing'), ('utilit', 'utilities'),
+                 ('electric', 'utilities'), ('water', 'utilities'), ('phone', 'utilities'),
+                 ('internet', 'utilities'), ('energy', 'utilities'))
+COUNTED_STATUSES = ('completed', 'pending', 'executed')
 ID_PATTERN = re.compile(r'[A-Za-z0-9_-]{1,128}')
 CENT = Decimal('0.01')
 
@@ -102,21 +105,7 @@ def _check_accounts(accounts, customer_id):
             raise ValueError('Account ownership does not match the configured customer')
         if not ID_PATTERN.fullmatch(str(a.get('_id', ''))):
             raise ValueError('Invalid account ID from source')
-    if len({a['_id'] for a in accounts}) != len(accounts):
-        raise ValueError('Duplicate account IDs from source')
     return [a for a in accounts if a.get('type') in CASH_ACCOUNT_TYPES]
-
-
-def select_cash_account(accounts, customer_id, account_id=None):
-    """No first-account guessing: an ambiguous selection must be configured."""
-    cash = _check_accounts(accounts, customer_id)
-    if account_id:
-        matches = [a for a in cash if a['_id'] == account_id]
-    else:
-        matches = [a for a in cash if a['type'] == 'Checking'] or cash
-    if len(matches) != 1:
-        raise ValueError('Configure one owned Nessie Checking/Savings account explicitly')
-    return matches[0]
 
 
 @dataclass
@@ -125,8 +114,6 @@ class NessieHistorySource:
     customer_id: str
     base_url: str
     cache_seconds: float = 60.0
-    account_id: str | None = None
-    select_single: bool = False
     _cache: tuple | None = field(default=None, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -135,8 +122,6 @@ class NessieHistorySource:
             raise ValueError('A server-side Nessie API key is required')
         if not ID_PATTERN.fullmatch(self.customer_id or ''):
             raise ValueError('Invalid configured customer ID')
-        if self.account_id is not None and not ID_PATTERN.fullmatch(self.account_id):
-            raise ValueError('Invalid configured account ID')
         if self.base_url not in tuple('https://' + host for host in NESSIE_HOSTS):
             raise ValueError('Use an explicit supported Nessie HTTPS origin without a trailing slash')
 
@@ -147,35 +132,23 @@ class NessieHistorySource:
 
     def load_raw(self):
         with self._lock:
-            if (self._cache and time.monotonic() - self._cache[0] < self.cache_seconds
-                    and self._cache[1]['fetched_at'][:10] == datetime.now(timezone.utc).date().isoformat()):
-                return deepcopy(self._cache[1])
-        available = self._get(f'/customers/{self.customer_id}/accounts')
-        fetched_at = datetime.now(timezone.utc).isoformat()
-        accounts = ([select_cash_account(available, self.customer_id, self.account_id)]
-                    if self.select_single or self.account_id else _check_accounts(available, self.customer_id))
+            if self._cache and time.monotonic() - self._cache[0] < self.cache_seconds:
+                return self._cache[1]
+        accounts = _check_accounts(
+            self._get(f'/customers/{self.customer_id}/accounts'), self.customer_id)
         raw = {'customer_id': self.customer_id, 'accounts': accounts}
         for kind in TRANSACTION_KINDS:
             rows = []
             for account in accounts:
                 # Nessie returns 404 (not []) for some empty collections, e.g. transfers.
-                records = self._get(f"/accounts/{account['_id']}/{kind}", empty_on_404=True)
-                if not isinstance(records, list) or len(records) > 2000 or any(not isinstance(r, dict) for r in records):
-                    raise ValueError('Invalid Nessie transaction collection')
-                owner_key = {'purchases': 'payer_id', 'withdrawals': 'payer_id',
-                             'deposits': 'payee_id', 'bills': 'account_id'}.get(kind)
-                for record in records:
-                    if owner_key and owner_key in record and record[owner_key] != account['_id']:
-                        raise ValueError('Transaction belongs to a different account')
-                    rows.append({**record, '_source_account_id': account['_id'],
-                                 '_source_account_type': account['type']})
+                for record in self._get(f"/accounts/{account['_id']}/{kind}", empty_on_404=True):
+                    if isinstance(record, dict):
+                        rows.append({**record, '_source_account_id': account['_id'],
+                                     '_source_account_type': account['type']})
             raw[kind] = rows
         raw['merchants'] = self._get('/merchants', empty_on_404=True)
-        if not isinstance(raw['merchants'], list) or any(not isinstance(r, dict) for r in raw['merchants']):
-            raise ValueError('Invalid Nessie merchant collection')
-        raw['fetched_at'] = fetched_at
         with self._lock:
-            self._cache = (time.monotonic(), deepcopy(raw))
+            self._cache = (time.monotonic(), raw)
         return raw
 
 
@@ -211,7 +184,7 @@ def _amount(value):
     if isinstance(value, bool) or not isinstance(value, (int, float, str, Decimal)):
         raise ValueError('Invalid amount in source')
     amount = Decimal(str(value))
-    if not amount.is_finite() or amount.copy_abs() > Decimal('1000000000000') or amount != amount.quantize(CENT):
+    if not amount.is_finite():
         raise ValueError('Invalid amount in source')
     return abs(amount).quantize(CENT)
 
@@ -224,13 +197,13 @@ def _clean_category(raw):
     if isinstance(raw, list):
         raw = raw[0] if raw else None
     if not raw:
-        return 'Other'
-    return CATEGORY_MAP.get(str(raw).strip().lower(), str(raw).strip().title()[:50])
+        return 'other'
+    return CATEGORY_MAP.get(str(raw).strip().lower(), 'other')
 
 
 def _bill_category(nickname):
     name = str(nickname or '').lower()
-    return next((cat for key, cat in BILL_KEYWORDS if key in name), 'Bills')
+    return next((cat for key, cat in BILL_KEYWORDS if key in name), 'other')
 
 
 def _text(value, default):
@@ -258,10 +231,10 @@ def normalize(raw):
 
     for r in raw.get('deposits', []):
         add(r, id_=r['_id'], day=r['transaction_date'], amount=_amount(r['amount']),
-            source='deposit', merchant=r.get('description') or 'Deposit', category='Income')
+            source='deposit', merchant=r.get('description') or 'Deposit', category='income')
     for r in raw.get('withdrawals', []):
         add(r, id_=r['_id'], day=r['transaction_date'], amount=-_amount(r['amount']),
-            source='withdrawal', merchant=r.get('description') or 'Withdrawal', category='Cash')
+            source='withdrawal', merchant=r.get('description') or 'Withdrawal', category='other')
     for r in raw.get('purchases', []):
         m = merchants.get(r.get('merchant_id'), {})
         add(r, id_=r['_id'], day=r['purchase_date'], amount=-_amount(r['amount']),
@@ -270,7 +243,7 @@ def normalize(raw):
     for r in raw.get('transfers', []):
         add(r, id_=r.get('id') or r.get('_id'), day=r['transaction_date'],
             amount=-_amount(r['amount']), source='transfer',
-            merchant=r.get('description') or 'Transfer', category='Transfer')
+            merchant=r.get('description') or 'Transfer', category='transfer')
     for r in raw.get('bills', []):
         if str(r.get('status', '')).lower() != 'completed':
             continue  # 'recurring' bills are the future schedule, not history
@@ -287,11 +260,11 @@ def normalize(raw):
 
     # Transfers: pair outgoing transfer with an incoming 'transfer' deposit (same date + amount).
     for r in unique:
-        r['is_transfer'] = r['source'] == 'transfer'
-    incoming = [r for r in unique if r['source'] == 'deposit'
-                and 'transfer' in r['description'].lower()]
-    for r in incoming:
-        r['is_transfer'], r['category'] = True, 'Transfer'
+        r['is_transfer'] = r['source'] == 'transfer' or (
+            r['source'] == 'deposit' and 'transfer' in r['description'].lower())
+        if r['is_transfer']:
+            to_savings = 'savings' in r['description'].lower() or r['account_type'] == 'Savings'
+            r['category'] = 'savings' if to_savings else 'transfer'
 
     for r in unique:
         counted = r['status'] in COUNTED_STATUSES
@@ -349,6 +322,5 @@ def build_history(source, *, currency='USD', month=None, months_back=6, today=No
         months=summaries, selected_month=month, transactions=transactions,
         notes=['Historical transactions only; already reflected in the current balance.',
                'Transfers between own accounts are excluded from spending and income.',
-               'Only completed/executed records count toward income or spending; pending records do not.',
                "Bills with status 'recurring' are future schedule, not history."],
     ).model_dump(mode='json')
