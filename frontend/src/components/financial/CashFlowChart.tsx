@@ -8,8 +8,17 @@ import type { AppliedEvent, ScenarioResult } from "@/types/financial";
 
 export type ChartSeries = { result: ScenarioResult; color: string; dash?: string; shortName: string };
 
-export function CashFlowChart({ series, events, bufferCents, selectedId, height = 340 }: {
+export type ChartMarker = { date: string; tone: "income" | "payment" | "concern"; label: string; detail: string };
+
+const MARKER_COLORS: Record<ChartMarker["tone"], string> = {
+  income: "var(--color-accent-foreground)",
+  payment: "var(--color-primary)",
+  concern: "var(--color-caution)",
+};
+
+export function CashFlowChart({ series, events, bufferCents, selectedId, height = 340, markers = [], onMarkerClick }: {
   series: ChartSeries[]; events: AppliedEvent[]; bufferCents?: number | undefined; selectedId?: string | undefined; height?: number;
+  markers?: ChartMarker[]; onMarkerClick?: ((marker: ChartMarker) => void) | undefined;
 }) {
   const data = useMemo(() => {
     const dates = series[0]?.result.dailyBalances.map((d) => d.date) ?? [];
@@ -91,6 +100,17 @@ export function CashFlowChart({ series, events, bufferCents, selectedId, height 
               fillOpacity={selectedId && selectedId !== s.result.id ? 0.35 : 1}
               label={selectedId && selectedId !== s.result.id ? "" : { value: `Low ${formatMoney(s.result.lowestBalanceCents, { whole: true })}`, position: "bottom", fontSize: 11, fontWeight: 600, fill: s.color }} />
           ))}
+          {markers.map((m) => {
+            const anchor = series.find((s) => s.result.id === selectedId) ?? series[0];
+            const y = anchor?.result.dailyBalances.find((d) => d.date === m.date)?.endOfDayBalanceCents;
+            if (y === undefined) return null;
+            return (
+              <ReferenceDot key={`ev-${m.date}-${m.label}`} x={m.date} y={y / 100} r={6}
+                fill={MARKER_COLORS[m.tone]} stroke="var(--color-card)" strokeWidth={2}
+                style={onMarkerClick ? { cursor: "pointer" } : undefined}
+                onClick={() => onMarkerClick?.(m)} />
+            );
+          })}
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -108,6 +128,9 @@ export function ChartLegend({ series }: { series: ChartSeries[] }) {
       ))}
       <li className="flex items-center gap-1.5"><span className="text-primary">▲</span> Income</li>
       <li className="flex items-center gap-1.5"><span>▼</span> Bill / expense</li>
+      <li className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--color-accent-foreground)" }} /> Money coming in</li>
+      <li className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--color-primary)" }} /> Planned payment</li>
+      <li className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: "var(--color-caution)" }} /> Budget concern</li>
     </ul>
   );
 }

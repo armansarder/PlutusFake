@@ -1,6 +1,13 @@
-# Plutus Stage 1 — Security & Integration Handoff
+# Plutus — Security & Integration Handoff
 
-The frontend alone cannot secure a real financial app. This lists what Stage 1 does in the browser and what the backend **must** add.
+The frontend alone cannot secure a real financial app. This lists what the frontend does in the browser and what the backend **must** add.
+
+## Stage 2/3 additions
+- Alerts are derived locally from the plan, snapshot and baseline simulation (`src/lib/alerts.ts`) — no random or fabricated warnings.
+- The Talk to Plutus demo assistant computes every number through the same simulation engine as the Simulator; it never invents tool results, and stress-test cards report tested outcomes ("N of 4 scenarios"), never probabilities.
+- Chat input is capped at 500 characters; all agent text renders through React escaping. Voice input uses the browser's speech recognition only when present, requires a user gesture, and never auto-submits — the user reviews the transcript first.
+- The Photon section shows real status when a backend provides it and otherwise honestly reports "Messaging demo — not connected." No fake phone numbers or channels.
+- Proposed backend paths live in `src/services/endpoints.ts`; HTTP adapters exist but are unused until `DATA_MODE` flips to `"remote"`.
 
 ## At rest
 **Frontend (done):** synthetic fixture only; no financial data in localStorage/sessionStorage/IndexedDB/URLs; state lives in React memory and resets on reload; no persistent query cache; no secrets or API keys in source; no analytics scripts.
