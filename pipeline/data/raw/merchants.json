@@ -1,5 +1,85 @@
 [
   {
+    "_id": "04761005-b79b-4e99-951d-dc300934aec4",
+    "name": "Planet Fitness",
+    "category": "subscriptions",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "113f1b77-854f-4841-816f-b46bba3900ce",
+    "name": "CVS Pharmacy",
+    "category": "other",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "15933b45-39cd-43f6-bb30-9354aa7111d3",
+    "name": "Trader Joe's",
+    "category": "groceries",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "37b5ee4b-793e-437d-92b2-7618275d4f2e",
+    "name": "AMC Theatres",
+    "category": "fun",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "479946e0-e43c-49c7-b04e-63f1a9ca1a2c",
+    "name": "Great Clips",
+    "category": "other",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
     "_id": "47d5addc-e49c-4cb5-b878-0bd23f40e412",
     "name": "Netflix",
     "category": "Subscriptions",
@@ -80,9 +160,41 @@
     }
   },
   {
+    "_id": "9b16013f-bcc6-4c28-bfea-9557e512aef2",
+    "name": "Torchy's Tacos",
+    "category": "fun",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
     "_id": "a36825cf-df29-4bb4-ac13-3a3b65235b31",
     "name": "H-E-B",
     "category": "Groceries",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "ade242aa-5218-47eb-b51c-25276b2ded00",
+    "name": "Target",
+    "category": "other",
     "address": {
       "street_number": "100",
       "street_name": "Main St",
@@ -112,6 +224,54 @@
     }
   },
   {
+    "_id": "c2bab9e8-d819-4946-92da-97fa8f924a04",
+    "name": "Deep Ellum Bar",
+    "category": "fun",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "cb103004-9727-448d-a206-3c18ef7ffaac",
+    "name": "DART",
+    "category": "transport",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
+    "_id": "dd2a8f2d-c263-43d5-86c3-37c0fc2b3ed8",
+    "name": "iCloud",
+    "category": "subscriptions",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
+    }
+  },
+  {
     "_id": "f137aac1-2b34-4c9f-8f90-689d17f1a2fa",
     "name": "Starbucks",
     "category": "Food",
@@ -125,6 +285,22 @@
     "geocode": {
       "lat": 32.98,
       "lng": -96.75
+    }
+  },
+  {
+    "_id": "fcc00001-226c-4943-ad6b-de038736a16b",
+    "name": "Walmart",
+    "category": "groceries",
+    "address": {
+      "street_number": "100",
+      "street_name": "Main St",
+      "city": "Richardson",
+      "state": "TX",
+      "zip": "75080"
+    },
+    "geocode": {
+      "lat": 32.95,
+      "lng": -96.73
     }
   }
 ]

@@ -1,15 +1,24 @@
 {
-  "customer_id": "0898b0b0-88cc-4011-ba91-3057e1b480a0",
-  "checking_id": "7b8bfb53-62d2-4582-881d-bbced51bd8cb",
-  "savings_id": "d7f44918-d8c6-4104-9b69-d39770210194",
+  "customer_id": "2776330a-cbab-4186-a77a-dfcec095e353",
+  "checking_id": "da852aff-dc7b-4eb8-8235-90ad30985ae7",
+  "savings_id": "b71b49c0-c55e-4a7a-b684-bb3d1faaf8fd",
   "merchants": {
-    "Starbucks": "f137aac1-2b34-4c9f-8f90-689d17f1a2fa",
-    "Chipotle": "7eb89599-1d1c-46b7-b622-7f05fd0db897",
-    "Whataburger": "599cc04b-c339-4fef-a426-89f5bf6be661",
     "H-E-B": "a36825cf-df29-4bb4-ac13-3a3b65235b31",
+    "Trader Joe's": "15933b45-39cd-43f6-bb30-9354aa7111d3",
+    "Walmart": "fcc00001-226c-4943-ad6b-de038736a16b",
     "Shell": "7a1eb7ba-601d-4f35-ad39-3a6af86c15c0",
-    "Amazon": "916f322b-94c8-44da-99df-8a547e0a4831",
+    "DART": "cb103004-9727-448d-a206-3c18ef7ffaac",
+    "Chipotle": "7eb89599-1d1c-46b7-b622-7f05fd0db897",
+    "Torchy's Tacos": "9b16013f-bcc6-4c28-bfea-9557e512aef2",
+    "AMC Theatres": "37b5ee4b-793e-437d-92b2-7618275d4f2e",
+    "Deep Ellum Bar": "c2bab9e8-d819-4946-92da-97fa8f924a04",
     "Netflix": "47d5addc-e49c-4cb5-b878-0bd23f40e412",
-    "Spotify": "c0e4e318-e087-4711-8860-5d29c99ac0b4"
+    "Spotify": "c0e4e318-e087-4711-8860-5d29c99ac0b4",
+    "iCloud": "dd2a8f2d-c263-43d5-86c3-37c0fc2b3ed8",
+    "Planet Fitness": "04761005-b79b-4e99-951d-dc300934aec4",
+    "Amazon": "916f322b-94c8-44da-99df-8a547e0a4831",
+    "Target": "ade242aa-5218-47eb-b51c-25276b2ded00",
+    "CVS Pharmacy": "113f1b77-854f-4841-816f-b46bba3900ce",
+    "Great Clips": "479946e0-e43c-49c7-b04e-63f1a9ca1a2c"
   }
 }
