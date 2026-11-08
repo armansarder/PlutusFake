@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarClock, PiggyBank, Wallet, Ticket } from "lucide-react";
 import { PageHeading } from "@/components/app/PageHeading";
@@ -11,14 +11,16 @@ import { formatMoney } from "@/lib/formatMoney";
 import { rawRemaining, summarizePlan } from "@/lib/budgetMath";
 import { snapshotQueryOptions } from "@/services/financial";
 import { budgetQueryOptions } from "@/services/budgets";
-import { situationQueryOptions, SITUATION_DATA_MODE } from "@/services/situation";
+import { DATA_MODE } from "@/services/config";
+import { CustomerFinancialData } from "@/components/app/CustomerFinancialData";
+import { BackendSource, BackendTransactions } from "@/components/financial/BackendRecords";
 import { baselineQueryOptions } from "@/services/simulation";
 import { yearHistoryQueryOptions } from "@/services/history";
 export const Route = createFileRoute("/dashboard")({
   loader: async ({ context }) => {
     // The backend customer has no Alex demo plan, baseline or history.
     // Let BackendSituation own loading, errors and retry in remote mode.
-    if (SITUATION_DATA_MODE === "remote") return;
+    if (DATA_MODE === "remote") return;
     const snap = await context.queryClient.ensureQueryData(snapshotQueryOptions);
     await Promise.all([
       context.queryClient.ensureQueryData(budgetQueryOptions(snap.startDate.slice(0, 7))),
@@ -48,23 +50,21 @@ function Situation() {
 }
 
 function CurrentSituation() {
-  return SITUATION_DATA_MODE === "remote" ? <BackendSituation /> : <Situation />;
+  return DATA_MODE === "remote" ? <BackendSituation /> : <Situation />;
 }
 export function BackendSituation() {
-  const query = useQuery(situationQueryOptions);
-  if (query.isPending) return <p role="status">Loading your current situation…</p>;
-  if (query.isError) return <div role="alert"><h1 className="font-display text-2xl">Current situation unavailable</h1><p className="my-4">We couldn't load the backend snapshot. No demo data has been substituted.</p><Button onClick={() => void query.refetch()}>Try again</Button></div>;
-  const snap = query.data;
-  const payday = snap.cashFlows.filter(t => t.type === "income").sort((a, b) => a.date.localeCompare(b.date))[0];
+  return <CustomerFinancialData>{snap => {
+  const payday = snap.cashFlows.filter(t => t.type === "income" && t.date >= snap.startDate).sort((a, b) => a.date.localeCompare(b.date))[0];
   return <div><PageHeading eyebrow={`${snap.customer.displayName} · ${formatDateOnly(snap.startDate)}`} title="Here's where you stand." description="Your backend account snapshot and upcoming scheduled events." />
-    <p className="mb-6 rounded-md bg-caution-soft p-3 text-sm">Backend data · {snap.backend?.synthetic ? "Synthetic demo dataset" : "Configured backend dataset"} · {snap.backend?.basis} snapshot. {snap.cashFlows.some(t => t.provenance === "assumed") ? "Includes estimated upcoming transactions." : "Upcoming transactions are marked confirmed by the source."} Schedule completeness is not verified.</p>
+    <BackendSource snapshot={snap} />
     <section aria-label="Key figures" className="grid gap-4 sm:grid-cols-2">
       <MetricCard icon={Wallet} label="Current checking balance" value={formatMoney(snap.startingBalanceCents)} hint="Snapshot balance · not all available to spend" />
       <MetricCard icon={PiggyBank} label="Planned savings this month" value="Unavailable" hint="Savings records have not been integrated for this customer" />
       <MetricCard icon={Ticket} label="Available flexible spending" value="Unavailable" hint="Budget records have not been integrated for this customer" />
       <MetricCard icon={CalendarClock} label="Next expected payday" value={payday ? formatMoney(payday.amountCents) : "Unavailable"} hint={payday ? `${formatDateOnly(payday.date)} · ${payday.provenance === "assumed" ? "estimated" : "confirmed"} income` : "No upcoming income supplied"} />
     </section>
-    <section className="mt-9 border-y border-border py-8"><h2 className="font-display text-2xl font-semibold">Upcoming transactions</h2>{snap.cashFlows.length ? <ul className="mt-4 space-y-3">{snap.cashFlows.map(t => <li key={t.id} className="flex flex-wrap justify-between gap-2"><span>{t.label} · {formatDateOnly(t.date)} · {t.provenance === "assumed" ? "Estimated" : "Confirmed"}</span><span>{formatMoney(t.amountCents)}</span></li>)}</ul> : <p>No upcoming transactions supplied.</p>}{snap.backend?.notes.map((note, i) => <p key={i} className="mt-3 text-sm text-muted-foreground">{note}</p>)}</section>
-    <p className="mt-6 text-sm text-muted-foreground">Other pages still use Alex's separate synthetic demo. Budget and savings information from that demo does not apply to this snapshot.</p>
+    <BackendTransactions snapshot={snap} />
+    <p className="mt-6 text-sm text-muted-foreground">We don't have your monthly spending plan, savings allocations or historical transactions yet.</p>
   </div>;
+  }}</CustomerFinancialData>;
 }

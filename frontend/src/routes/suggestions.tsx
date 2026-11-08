@@ -10,11 +10,16 @@ import { rawRemaining, summarizePlan } from "@/lib/budgetMath";
 import { formatMoney } from "@/lib/formatMoney";
 import { addDays, formatDateOnly } from "@/lib/dateOnly";
 import { HORIZON_DAYS } from "@/types/financial";
+import { DATA_MODE } from "@/services/config";
+import { BackendCustomerPage } from "@/components/app/BackendCustomerPage";
 export const Route = createFileRoute("/suggestions")({
-  loader: async ({ context }) => { const snap = await context.queryClient.ensureQueryData(snapshotQueryOptions); await context.queryClient.ensureQueryData(budgetQueryOptions(snap.startDate.slice(0, 7))); },
-  head: () => ({ meta: [{ title: "Suggestions — Plutus" }, { name: "description", content: "Supportive example suggestions for Alex's synthetic monthly plan. No live AI or financial advice." }, { property: "og:title", content: "Suggestions — Plutus" }, { property: "og:description", content: "A few possibilities to consider, with your plan always under your control." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: Suggestions,
+  loader: async ({ context }) => { if (DATA_MODE === "remote") return; const snap = await context.queryClient.ensureQueryData(snapshotQueryOptions); await context.queryClient.ensureQueryData(budgetQueryOptions(snap.startDate.slice(0, 7))); },
+  head: () => ({ meta: [{ title: "Suggestions — Plutus" }, { name: "description", content: "Explore suggestions when your monthly plan is available. Not financial advice." }, { property: "og:title", content: "Suggestions — Plutus" }, { property: "og:description", content: "A few possibilities to consider, with your plan always under your control." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }), component: Suggestions,
 });
 function Suggestions() {
+  return DATA_MODE === "remote" ? <BackendCustomerPage page="suggestions" /> : <DemoSuggestions />;
+}
+function DemoSuggestions() {
   const { data: snap } = useSuspenseQuery(snapshotQueryOptions);
   const { data: plan } = useSuspenseQuery(budgetQueryOptions(snap.startDate.slice(0, 7)));
   const { setRequest } = useDecision();

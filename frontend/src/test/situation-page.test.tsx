@@ -2,7 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 const { load } = vi.hoisted(() => ({ load: vi.fn() }));
-vi.mock("@/services/situation", () => ({ SITUATION_DATA_MODE: "remote", situationQueryOptions: { queryKey: ["situation-test"], queryFn: load, retry: false } }));
+vi.mock("@/services/financial", () => ({ snapshotQueryOptions: { queryKey: ["situation-test"], queryFn: load, retry: false } }));
+vi.mock("@/services/config", () => ({ DATA_MODE: "remote", API_BASE_URL: "" }));
 import { BackendSituation, Route } from "@/routes/dashboard";
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 function page() { render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><BackendSituation /></QueryClientProvider>); }

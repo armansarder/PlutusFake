@@ -3,6 +3,7 @@ import { agentResponseSchema, messagingStatusSchema, type AgentAdapter, type Mes
 import { requestJson, resolveBaseUrl } from "./apiClient";
 import { API_BASE_URL, DATA_MODE } from "./config";
 import { ENDPOINTS } from "./endpoints";
+import { unavailable } from "./unavailable";
 
 /** Future: POST /api/agent/message — Nemotron orchestrates simulation tools on the backend. */
 export class HttpAgentAdapter implements AgentAdapter {
@@ -30,5 +31,5 @@ export class SyntheticMessagingAdapter implements MessagingAdapter {
   }
 }
 
-export const agentAdapter: AgentAdapter = DATA_MODE === "remote" ? new HttpAgentAdapter() : new SyntheticAgentAdapter();
-export const messagingAdapter: MessagingAdapter = DATA_MODE === "remote" ? new HttpMessagingAdapter() : new SyntheticMessagingAdapter();
+export const agentAdapter: AgentAdapter = DATA_MODE === "remote" ? { ask: unavailable } : new SyntheticAgentAdapter();
+export const messagingAdapter: MessagingAdapter = DATA_MODE === "remote" ? { getStatus: unavailable } : new SyntheticMessagingAdapter();

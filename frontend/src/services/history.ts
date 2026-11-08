@@ -3,6 +3,7 @@ import { yearHistorySchema, type HistoryAdapter, type YearHistory } from "@/type
 import { requestJson, resolveBaseUrl } from "./apiClient";
 import { API_BASE_URL, DATA_MODE } from "./config";
 import { ENDPOINTS } from "./endpoints";
+import { unavailable } from "./unavailable";
 
 /** Future: GET /api/financial/history?year=YYYY — normalized Nessie records from the backend. */
 export class HttpHistoryAdapter implements HistoryAdapter {
@@ -23,10 +24,10 @@ export class SyntheticHistoryAdapter implements HistoryAdapter {
 }
 
 export const historyAdapter: HistoryAdapter =
-  DATA_MODE === "remote" ? new HttpHistoryAdapter() : new SyntheticHistoryAdapter();
+  DATA_MODE === "remote" ? { getYearHistory: unavailable } : new SyntheticHistoryAdapter();
 
 export const yearHistoryQueryOptions = (year: number) => ({
-  queryKey: ["year-history", year] as const,
+  queryKey: ["year-history", DATA_MODE, year] as const,
   queryFn: ({ signal }: { signal: AbortSignal }) => historyAdapter.getYearHistory(year, signal),
   staleTime: Infinity,
 });

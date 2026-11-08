@@ -11,9 +11,12 @@ import { budgetQueryOptions } from "@/services/budgets";
 import { baselineQueryOptions } from "@/services/simulation";
 import { addDays } from "@/lib/dateOnly";
 import { HORIZON_DAYS, type FinancialSnapshot } from "@/types/financial";
+import { DATA_MODE } from "@/services/config";
+import { BackendCustomerPage } from "@/components/app/BackendCustomerPage";
 
 export const Route = createFileRoute("/alerts")({
   loader: async ({ context }) => {
+    if (DATA_MODE === "remote") return;
     const snap = await context.queryClient.ensureQueryData(snapshotQueryOptions);
     await Promise.all([
       context.queryClient.ensureQueryData(budgetQueryOptions(snap.startDate.slice(0, 7))),
@@ -22,7 +25,7 @@ export const Route = createFileRoute("/alerts")({
   },
   head: () => ({ meta: [
     { title: "Alerts — Plutus" },
-    { name: "description", content: "Gentle heads-ups derived from your synthetic plan and cash forecast — before small things become problems." },
+    { name: "description", content: "Gentle heads-ups derived from your available plan and cash forecast — before small things become problems." },
     { property: "og:title", content: "Alerts — Plutus" },
     { property: "og:description", content: "Budget, savings and upcoming-bill alerts based on your plan, not just your balance." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
@@ -77,6 +80,9 @@ function AlertCard({ alert, snap }: { alert: PlutusAlert; snap: FinancialSnapsho
 }
 
 function Alerts() {
+  return DATA_MODE === "remote" ? <BackendCustomerPage page="alerts" /> : <DemoAlerts />;
+}
+function DemoAlerts() {
   const { data: snap } = useSuspenseQuery(snapshotQueryOptions);
   const { data: plan } = useSuspenseQuery(budgetQueryOptions(snap.startDate.slice(0, 7)));
   const { data: baseline } = useSuspenseQuery(baselineQueryOptions(snap.snapshotId, snap.startDate));

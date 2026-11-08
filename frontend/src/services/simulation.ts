@@ -2,6 +2,7 @@ import { SyntheticSimulationAdapter } from "@/mocks/syntheticSimulationAdapter";
 import { HORIZON_DAYS, scenarioComparisonSchema, type SimulationAdapter } from "@/types/financial";
 import { requestJson, resolveBaseUrl } from "./apiClient";
 import { API_BASE_URL, DATA_MODE } from "./config";
+import { unavailable } from "./unavailable";
 
 /** Future: POST /api/v1/simulations/compare — backend is the authoritative calculator. */
 export class HttpSimulationAdapter implements SimulationAdapter {
@@ -16,11 +17,11 @@ export class HttpSimulationAdapter implements SimulationAdapter {
 }
 
 export const simulationAdapter: SimulationAdapter =
-  DATA_MODE === "remote" ? new HttpSimulationAdapter() : new SyntheticSimulationAdapter();
+  DATA_MODE === "remote" ? { compareScenarios: unavailable } : new SyntheticSimulationAdapter();
 
 export function baselineQueryOptions(snapshotId: string, startDate: string, bufferCents = 20000) {
   return {
-    queryKey: ["baseline", snapshotId, bufferCents] as const,
+    queryKey: ["baseline", DATA_MODE, snapshotId, bufferCents] as const,
     queryFn: ({ signal }: { signal: AbortSignal }) =>
       simulationAdapter.compareScenarios(
         {

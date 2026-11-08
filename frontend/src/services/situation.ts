@@ -2,9 +2,9 @@ import { SyntheticDataAdapter } from "@/mocks/syntheticSimulationAdapter";
 import type { FinancialDataAdapter, FinancialSnapshot } from "@/types/financial";
 import { requestJson } from "./apiClient";
 import { backendFinancialSchema } from "./backendFinancial";
+import { DATA_MODE } from "./config";
 
-export const SITUATION_DATA_MODE = import.meta.env["VITE_SITUATION_DATA_MODE"] ?? "synthetic_demo";
-if (!["remote", "synthetic_demo"].includes(SITUATION_DATA_MODE)) throw new Error("Invalid Current Situation data mode");
+export const SITUATION_DATA_MODE = DATA_MODE;
 export type SituationSnapshot = FinancialSnapshot & { backend?: { notes: string[]; synthetic: boolean; basis: string } };
 export class BackendSituationAdapter implements FinancialDataAdapter {
   readonly source = "nessie_sandbox" as const;
@@ -20,9 +20,9 @@ export class BackendSituationAdapter implements FinancialDataAdapter {
     };
   }
 }
-const adapter: FinancialDataAdapter = SITUATION_DATA_MODE === "remote" ? new BackendSituationAdapter() : new SyntheticDataAdapter();
+export const customerFinancialAdapter = DATA_MODE === "remote" ? new BackendSituationAdapter() : new SyntheticDataAdapter();
 export const situationQueryOptions = {
-  queryKey: ["current-situation", SITUATION_DATA_MODE],
-  queryFn: ({ signal }: { signal: AbortSignal }): Promise<SituationSnapshot> => adapter.getSnapshot(signal),
-  retry: false, staleTime: 30000,
+  queryKey: ["customer-financial-snapshot", DATA_MODE],
+  queryFn: ({ signal }: { signal: AbortSignal }): Promise<SituationSnapshot> => customerFinancialAdapter.getSnapshot(signal),
+  retry: false, staleTime: DATA_MODE === "remote" ? 30000 : Infinity,
 };

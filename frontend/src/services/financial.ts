@@ -1,7 +1,7 @@
-import { SyntheticDataAdapter } from "@/mocks/syntheticSimulationAdapter";
 import { financialSnapshotSchema, type FinancialDataAdapter } from "@/types/financial";
 import { requestJson, resolveBaseUrl } from "./apiClient";
-import { API_BASE_URL, DATA_MODE } from "./config";
+import { API_BASE_URL } from "./config";
+import { customerFinancialAdapter, situationQueryOptions } from "./situation";
 
 /** Future: GET /api/v1/financial/snapshot — the server identifies the user from its session. */
 export class HttpFinancialDataAdapter implements FinancialDataAdapter {
@@ -12,11 +12,6 @@ export class HttpFinancialDataAdapter implements FinancialDataAdapter {
   }
 }
 
-export const financialDataAdapter: FinancialDataAdapter =
-  DATA_MODE === "remote" ? new HttpFinancialDataAdapter() : new SyntheticDataAdapter();
-
-export const snapshotQueryOptions = {
-  queryKey: ["financial-snapshot"] as const,
-  queryFn: ({ signal }: { signal: AbortSignal }) => financialDataAdapter.getSnapshot(signal),
-  staleTime: Infinity,
-};
+// Every page and the legacy Current Situation API share one adapter and cache entry.
+export const financialDataAdapter = customerFinancialAdapter;
+export const snapshotQueryOptions = situationQueryOptions;

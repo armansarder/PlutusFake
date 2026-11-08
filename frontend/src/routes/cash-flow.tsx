@@ -18,9 +18,12 @@ import { baselineQueryOptions, simulationAdapter } from "@/services/simulation";
 import { yearHistoryQueryOptions } from "@/services/history";
 import { formatMoney, formatSignedMoney } from "@/lib/formatMoney";
 import { formatDateOnly } from "@/lib/dateOnly";
+import { DATA_MODE } from "@/services/config";
+import { BackendCustomerPage } from "@/components/app/BackendCustomerPage";
 
 export const Route = createFileRoute("/cash-flow")({
   loader: async ({ context }) => {
+    if (DATA_MODE === "remote") return;
     const snap = await context.queryClient.ensureQueryData(snapshotQueryOptions);
     await Promise.all([
       context.queryClient.ensureQueryData(baselineQueryOptions(snap.snapshotId, snap.startDate)),
@@ -30,7 +33,7 @@ export const Route = createFileRoute("/cash-flow")({
   },
   head: () => ({ meta: [
     { title: "Cash flow — Plutus" },
-    { name: "description", content: "Explore synthetic projected cash, important dates and your year so far, plus the impact of your last hypothetical decision." },
+    { name: "description", content: "Review available cash-flow records and important dates." },
     { property: "og:title", content: "Cash flow — Plutus" },
     { property: "og:description", content: "See when money comes in, when bills arrive and where things get tight." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
@@ -39,6 +42,9 @@ export const Route = createFileRoute("/cash-flow")({
 });
 
 function CashFlow() {
+  return DATA_MODE === "remote" ? <BackendCustomerPage page="cash-flow" /> : <DemoCashFlow />;
+}
+function DemoCashFlow() {
   const { data: snap } = useSuspenseQuery(snapshotQueryOptions);
   const { data: plan } = useSuspenseQuery(budgetQueryOptions(snap.startDate.slice(0, 7)));
   const { data: history } = useSuspenseQuery(yearHistoryQueryOptions(Number(snap.startDate.slice(0, 4))));

@@ -8,11 +8,13 @@ import { PhotonSection } from "@/components/chat/PhotonSection";
 import { Button } from "@/components/ui/button";
 import { agentAdapter } from "@/services/agent";
 import type { AgentResponse } from "@/types/agent";
+import { DATA_MODE } from "@/services/config";
+import { BackendCustomerPage } from "@/components/app/BackendCustomerPage";
 
 export const Route = createFileRoute("/talk")({
   head: () => ({ meta: [
     { title: "Talk to Plutus — Plutus" },
-    { name: "description", content: "Ask Plutus about your money. Answers use the same synthetic simulation engine as the decision simulator." },
+    { name: "description", content: "Explore financial questions when personalized answers are available." },
     { property: "og:title", content: "Talk to Plutus — Plutus" },
     { property: "og:description", content: "Explore financial choices, understand your budget, and plan your next move." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
@@ -33,6 +35,9 @@ function speechRecognitionCtor(): (new () => SpeechRecognitionLike) | null {
 }
 
 function Talk() {
+  return DATA_MODE === "remote" ? <BackendCustomerPage page="talk" /> : <DemoTalk />;
+}
+function DemoTalk() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
